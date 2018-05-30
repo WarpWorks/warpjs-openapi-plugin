@@ -1,0 +1,66 @@
+{
+  "name": "@warp-works/warpjs-openapi-plugin",
+  "version": "1.2.1",
+  "description": "openapi plugin for WarpJS",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "npm run grunt && npm test",
+    "grunt": "grunt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WarpWorks/warpjs-openapi-plugin.git"
+  },
+  "keywords": [
+    "warp-works",
+    "warpjs",
+    "openapi",
+    "plugin"
+  ],
+  "author": "Max Ficht",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/WarpWorks/warpjs-openapi-plugin/issues"
+  },
+  "homepage": "https://github.com/WarpWorks/warpjs-openapi-plugin#readme",
+  "dependencies": {
+    "bluebird": "3.5.1",
+    "elasticsearch": "14.0.0",
+    "hbs": "4.0.1"
+  },
+  "devDependencies": {
+    "@quoin/eslint-config-quoin": "0.2.0",
+    "@quoin/expressjs-routes-info": "0.2.0",
+    "@quoin/node-test-helpers": "0.3.1",
+    "@warp-works/warpjs-plugins": "1.2.x",
+    "@warp-works/warpjs-utils": "1.2.x",
+    "ajv": "5.5.x",
+    "babel-core": "6.26.0",
+    "babel-loader": "7.1.2",
+    "babel-preset-env": "1.6.1",
+    "babel-preset-stage-0": "6.24.1",
+    "eslint-plugin-html": "4.0.1",
+    "eslint-plugin-import": "2.8.0",
+    "eslint-plugin-json": "1.2.0",
+    "eslint-plugin-node": "5.2.1",
+    "eslint-plugin-promise": "3.6.0",
+    "eslint-plugin-standard": "3.0.1",
+    "express": "4.16.2",
+    "grunt": "1.0.1",
+    "grunt-cli": "1.2.0",
+    "grunt-contrib-clean": "1.1.0",
+    "grunt-contrib-less": "1.4.1",
+    "grunt-eslint": "20.1.0",
+    "grunt-webpack": "3.0.2",
+    "handlebars-loader": "1.6.0",
+    "load-grunt-config": "0.19.2",
+    "mocha": "4.1.x",
+    "time-grunt": "1.4.0",
+    "webpack": "2.7.0"
+  },
+  "peerDependencies": {
+    "@quoin/expressjs-routes-info": ">=0.2.0",
+    "@warp-works/warpjs-utils": ">=1.2.10",
+    "express": ">=4.0.0"
+  }
+}
