@@ -12,7 +12,7 @@ function createOpenApi(domainName, baseurl) {
         console.log(baseurl);
         // basepath = "/app"
         // TODO get the IP dynamically
-        openApiSpec = new CreateApiSpec(baseurl, constants.ROUTE_NAME + this.name);
+        openApiSpec = new CreateApiSpec(baseurl, "/REST/" + this.name);
 
         openApiSpec.paths = {};
         openApiSpec.definitions = {};
