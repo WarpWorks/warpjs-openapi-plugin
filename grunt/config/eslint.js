@@ -43,18 +43,5 @@ module.exports = {
             'client/**/*.js',
             '!client/**/*.test.js'
         ]
-    },
-    test: {
-        options: {
-            baseConfig: {
-                root: true,
-                extends: '@quoin/eslint-config-quoin/node-test'
-            }
-        },
-        src: [
-            '*.test.js',
-            'client/**/*.test.js',
-            'server/**/*.test.js'
-        ]
     }
 };

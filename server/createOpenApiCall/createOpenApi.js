@@ -1,11 +1,9 @@
 // const RoutesInfo = require('@quoin/expressjs-routes-info');
 // const warpjsUtils = require('@warp-works/warpjs-utils');
 const warpCore = require('@warp-works/core');
-// const constants = require('./../../lib/constants');
+const constants = require('./../../lib/constants');
 const Domain = require('@warp-works/core/lib/models/domain');
 const Entity = require('@warp-works/core/lib/models/entity');
-// var createOpenApi = require('./createOpenApi');
-// const constants = require('./../../lib/constants');
 
 function createOpenApi(domainName, baseurl) {
     // creates and return entire OpenAPI Spec for a domain
@@ -14,7 +12,7 @@ function createOpenApi(domainName, baseurl) {
         console.log(baseurl);
         // basepath = "/app"
         // TODO get the IP dynamically
-        openApiSpec = new CreateApiSpec(baseurl, '/content/REST/' + this.name);
+        openApiSpec = new CreateApiSpec(baseurl, constants.ROUTE_NAME + this.name);
 
         openApiSpec.paths = {};
         openApiSpec.definitions = {};
