@@ -1,8 +1,11 @@
 // const RoutesInfo = require('@quoin/expressjs-routes-info');
 // const warpjsUtils = require('@warp-works/warpjs-utils');
 const warpCore = require('@warp-works/core');
+// const constants = require('./../../lib/constants');
 const Domain = require('@warp-works/core/lib/models/domain');
 const Entity = require('@warp-works/core/lib/models/entity');
+// var createOpenApi = require('./createOpenApi');
+// const constants = require('./../../lib/constants');
 
 function createOpenApi(domainName, baseurl) {
     // creates and return entire OpenAPI Spec for a domain
@@ -11,7 +14,7 @@ function createOpenApi(domainName, baseurl) {
         console.log(baseurl);
         // basepath = "/app"
         // TODO get the IP dynamically
-        openApiSpec = new CreateApiSpec(baseurl, "/REST/" + this.name);
+        openApiSpec = new CreateApiSpec(baseurl, '/content/REST/' + this.name);
 
         openApiSpec.paths = {};
         openApiSpec.definitions = {};
@@ -22,13 +25,13 @@ function createOpenApi(domainName, baseurl) {
                 // If is document (not embedded) Create path -
                 var parentAgg = entity.getParentAggregation();
 
-                if (entity.isDocument()) {
+                if (true) {
                     if (entity.isRootEntity || parentAgg.parent.isRootInstance) {
-                        openApiSpec.paths["/" + parentAgg.name] = entity.entityEndpoint(["POST"], null);
-                        openApiSpec.paths["/" + parentAgg.name + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
+                        openApiSpec.paths["/" + entity.namePlural] = entity.entityEndpoint(["POST"], null);
+                        openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
                     } else {
-                        openApiSpec.paths["/" + parentAgg.parent.getParentAggregation().name + "/{" + parentAgg.parent.name + "_id}/" + parentAgg.name] = entity.entityEndpoint(["POST"], parentAgg.parent.name);
-                        openApiSpec.paths["/" + parentAgg.name + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
+                        openApiSpec.paths["/" + parentAgg.parent.namePlural + "/{" + parentAgg.parent.name + "_id}/" + entity.namePlural] = entity.entityEndpoint(["POST"], parentAgg.parent.name);
+                        openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
                     }
                 }
 
