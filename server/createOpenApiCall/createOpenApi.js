@@ -25,14 +25,12 @@ function createOpenApi(domainName, baseurl) {
                 // If is document (not embedded) Create path -
                 var parentAgg = entity.getParentAggregation();
 
-                if (true) {
-                    if (entity.isRootEntity || parentAgg.parent.isRootInstance) {
-                        openApiSpec.paths["/" + entity.namePlural] = entity.entityEndpoint(["POST"], null);
-                        openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
-                    } else {
-                        openApiSpec.paths["/" + parentAgg.parent.namePlural + "/{" + parentAgg.parent.name + "_id}/" + entity.namePlural] = entity.entityEndpoint(["POST"], parentAgg.parent.name);
-                        openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
-                    }
+                if (entity.isRootEntity || parentAgg.parent.isRootInstance) {
+                    openApiSpec.paths["/" + entity.namePlural] = entity.entityEndpoint(["POST"], null);
+                    openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
+                } else {
+                    openApiSpec.paths["/" + parentAgg.parent.namePlural + "/{" + parentAgg.parent.name + "_id}/" + entity.namePlural] = entity.entityEndpoint(["POST"], parentAgg.parent.name);
+                    openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
                 }
 
                 /*
