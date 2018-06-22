@@ -3,8 +3,8 @@ const warpjsUtils = require('@warp-works/warpjs-utils');
 
 const utils = require('./../utils');
 const logger = require('./../loggers');
-const serverUtils = require('@warp-works/warpjs/lib/utils');
-
+const _ = require('lodash');
+var domainInstance;
 function updateDocument(persistence, entity, instance, searchstring, req, res, type, id) {
     const payload = req.body;
     const updateKey = payload.key;
@@ -31,45 +31,51 @@ function updateDocument(persistence, entity, instance, searchstring, req, res, t
 module.exports = (req, res) => {
     var params = req.params[0].split("/");
     const domain = params.splice(0, 1)[0];
-    const relationship = params.splice(0, 1)[0];
+    const parentName = params.splice(0, 1)[0];
     const id = params.splice(0, 1)[0];
 
-    const domainInstance = serverUtils.getDomain(domain);
+    Promise.resolve(warpjsUtils.getDomain(domain))
+        .then(domainResolved => {
+            domainInstance = domainResolved;
 
-    const parent = domainInstance.getParentEntityByRelationshipName(relationship);
-    const relationshipEntity = parent.getRelationshipByName(relationship);
-    const entity = relationshipEntity.getTargetEntity();
-    const type = entity.name;
+            const entity = domainInstance.getEntityByPluralName(parentName);
+            const type = entity.name;
 
-    // FIXME: What happens for a password? The password should not be managed
-    // with the "content" side of things, and should not, be using this
-    // end-point.
-    logger(req, "Trying to patch", req.body);
+            // FIXME: What happens for a password? The password should not be managed
+            // with the "content" side of things, and should not, be using this
+            // end-point.
+            logger(req, "Trying to patch", req.body);
 
-    const persistence = serverUtils.getPersistence(domain);
-    return Promise.resolve()
-        .then(() => entity.getInstance(persistence, id))
-        .then(
-            (instance) => updateDocument(persistence, entity, instance, params, req, res, type, id),
-            () => serverUtils.documentDoesNotExist(req, res)
-        )
-        .catch((err) => {
-            logger(req, "Invalid ID supplied", {err});
-            const resource = warpjsUtils.createResource(req, {
-                domain,
-                type,
-                id,
-                body: req.body,
-                message: err.message
-            });
-            utils.sendHal(req, res, resource, 400);
-        })
-        .finally(() => persistence.close());
+            const persistence = warpjsUtils.getPersistence(domain);
+            return Promise.resolve()
+                .then(() => entity.getInstance(persistence, id))
+                .then(
+                    (instance) => {
+                        if (!(_.isEmpty(instance))) {
+                            updateDocument(persistence, entity, instance, params, req, res, type, id);
+                        } else {
+                            var err = Error("Could not find Instance with ID: " + id);
+                            throw err;
+                        }
+                    }
+
+                )
+                .catch((err) => {
+                    logger(req, "Invalid ID supplied", {err});
+
+                    warpjsUtils.documentDoesNotExist(req, res);
+                })
+                .finally(() => persistence.close());
+        });
 };
 
 function patchNewValue(searchstring, instance, updateKey, updateValue) {
     if (searchstring.length > 0) {
-        var searchRel = searchstring.splice(0, 1)[0];
+        var nestedPluralName = searchstring.splice(0, 1)[0];
+
+        var nestedEntity = domainInstance.getEntityByPluralName(nestedPluralName);
+        var entityofInstance = domainInstance.getEntityByName(instance.type);
+        var searchRel = entityofInstance.getRelationshipByChildName(nestedEntity.name).name;
         var searchID = searchstring.splice(0, 1)[0];
 
         // check if there are embedded entities, only those need ids

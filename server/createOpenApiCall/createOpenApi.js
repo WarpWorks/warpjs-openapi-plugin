@@ -1,7 +1,6 @@
 // const RoutesInfo = require('@quoin/expressjs-routes-info');
 // const warpjsUtils = require('@warp-works/warpjs-utils');
 const warpCore = require('@warp-works/core');
-const constants = require('./../../lib/constants');
 const Domain = require('@warp-works/core/lib/models/domain');
 const Entity = require('@warp-works/core/lib/models/entity');
 
