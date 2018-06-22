@@ -1,11 +1,8 @@
 // const RoutesInfo = require('@quoin/expressjs-routes-info');
 // const warpjsUtils = require('@warp-works/warpjs-utils');
 const warpCore = require('@warp-works/core');
-// const constants = require('./../../lib/constants');
 const Domain = require('@warp-works/core/lib/models/domain');
 const Entity = require('@warp-works/core/lib/models/entity');
-// var createOpenApi = require('./createOpenApi');
-// const constants = require('./../../lib/constants');
 
 function createOpenApi(domainName, baseurl) {
     // creates and return entire OpenAPI Spec for a domain
@@ -14,47 +11,39 @@ function createOpenApi(domainName, baseurl) {
         console.log(baseurl);
         // basepath = "/app"
         // TODO get the IP dynamically
-        openApiSpec = new CreateApiSpec(baseurl, '/content/REST/' + this.name);
+        openApiSpec = new CreateApiSpec(baseurl, "/REST/" + this.name);
 
         openApiSpec.paths = {};
         openApiSpec.definitions = {};
 
         this.getEntities().forEach(function(entity) {
             // No Root Entity and only Document get Paths
-            if (typeof (entity.name) !== "undefined" && entity.isRootInstance !== true && entity.isAbstract !== true && entity.getAllParentAggregations().length < 2) {
+            if (typeof (entity.name) !== "undefined" && entity.isRootInstance !== true && entity.isAbstract !== true ) {
                 // If is document (not embedded) Create path -
                 var parentAgg = entity.getParentAggregation();
 
-                if (entity.isRootEntity || parentAgg.parent.isRootInstance) {
-                    openApiSpec.paths["/" + entity.namePlural] = entity.entityEndpoint(["POST"], null);
-                    openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
-                } else {
-                    openApiSpec.paths["/" + parentAgg.parent.namePlural + "/{" + parentAgg.parent.name + "_id}/" + entity.namePlural] = entity.entityEndpoint(["POST"], parentAgg.parent.name);
-                    openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
+                if (entity.isDocument()) {
+                    if (entity.isRootEntity || parentAgg.parent.isRootInstance) {
+                        openApiSpec.paths["/" + entity.namePlural] = entity.entityEndpoint(["POST"], null);
+                        openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
+                    } else {
+                        openApiSpec.paths["/" + parentAgg.parent.namePlural + "/{" + parentAgg.parent.name + "_id}/" + entity.namePlural] = entity.entityEndpoint(["POST"], parentAgg.parent.name);
+                        openApiSpec.paths["/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
+                    }
                 }
+			
+                
+				else {
+					var path = createEmbeddedPath(entity,this,"");
 
-                /*
-else{
-
-var path = "";
-var curEntity = entity;
-while(curEntity.isDocument !== true)
-{
-var curParentAgg = curEntity.getParentAggregation();
-path = "/"+curParentAgg.name+"/{"+curEntity.name+"_id}"+ path ;
-console.log(path);
-curEntity = curParentAgg.parent;
-}
-
-path = curEntity.name +"/{"+curEntity.name+"_id}"+path;
-openApiSpec.paths[path] = entity.entityInstanceEndpoint();
-}
-//add functionality for get on embedded docs.
-openApiSpec.paths["/{PATHTOPARENTENTITY}"+entity.name] = {};
-openApiSpec.paths["/"+entity.name] = entity.entityEndpoint();
-openApiSpec.paths["/"+entity.name+"/{"+entity.name+"_id}"] = entity.entityInstanceEndpoint();
-*/
-            }
+						openApiSpec.paths[path+"/" + entity.namePlural] = entity.entityEndpoint(["POST"], parentAgg.parent.name);
+						openApiSpec.paths[path+"/" + entity.namePlural + "/{" + entity.name + "_id}"] = entity.entityInstanceEndpoint();
+					
+					
+				}
+			}
+		
+          
 
             // All Entities are getting OPEN API References
             if (entity.name !== null && entity.name !== undefined && !entity.isRootInstance && !entity.isAbstract) {
@@ -116,6 +105,7 @@ openApiSpec.paths["/"+entity.name+"/{"+entity.name+"_id}"] = entity.entityInstan
             return swagger;
         };
         function CreateApiSpec(IP, basepath) {
+			
             const OpenApi = {
                 swagger: "2.0",
                 info: {
@@ -135,7 +125,21 @@ openApiSpec.paths["/"+entity.name+"/{"+entity.name+"_id}"] = entity.entityInstan
             return OpenApi;
         };
 
-        return JSON.stringify(openApiSpec);
+        function  createEmbeddedPath(entity,domain,path){
+			
+			if (entity.isDocument()) {
+			    var parentName = entity.getParentAggregation().parent.namePlural;
+				path = path +"/"+parentName+"/{"+parentName+"_id}";
+				return path;
+			}
+			else{
+				var parentEntity = entity.getParentAggregation().parent;
+				path = path +"/"+parentEntity.namePlural+"/{"+parentEntity.name+"_id}";
+				return createEmbeddedPath(parentEntity,domain,path);					
+			}		
+			
+		}
+		return JSON.stringify(openApiSpec);
     };
 
     // gets OpenApiSchema for an entity
@@ -313,9 +317,43 @@ openApiSpec.paths["/"+entity.name+"/{"+entity.name+"_id}"] = entity.entityInstan
         paths["put"] = createEntityInstanceEnpoint(this, "PUT");
         paths["delete"] = createEntityInstanceEnpoint(this, "DELETE");
         paths["patch"] = createEntityInstanceEnpoint(this, "PATCH");
+		if (!this.isDocument()){
+			for (var path in paths){
+				
+				paths[path] = createEmbeddedParams(this.getParentAggregation().parent,paths[path])
+				
+				
+			}
+		}	
 
-        // create Endpoints for Aggregations i.E Customer/{custid}/myOrders/{OrderID}/addresses/{addressid}
         return paths;
+	
+		function createEmbeddedParams(entity,path){
+			if (entity.isDocument()){
+				var paramDesc = {
+					in: "path",
+					name: entity.name + "_id",
+					required: true,
+					type: "string",
+					description: entity.name + "_id of the Parent Instance. "
+				}
+				path.parameters.push(paramDesc)
+				return path;
+
+			}
+			else {				
+				var paramDesc = {
+						in: "path",
+						name: entity.name + "_id",
+						required: true,
+						type: "string",
+						description: entity.name + "_id of the Parent Instance. "
+						}
+					path.parameters.push(paramDesc);
+				return createEmbeddedParams(entity.getParentAggregation().parent,path);
+				}
+			}
+			
 
         function createEntityInstanceEnpoint(ent, restCommand) {
             switch (restCommand) {
