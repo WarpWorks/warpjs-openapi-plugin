@@ -1,6 +1,6 @@
 {
   "name": "@warp-works/warpjs-openapi-plugin",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "openapi plugin for WarpJS",
   "main": "index.js",
   "scripts": {
